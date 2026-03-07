@@ -2,6 +2,42 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 const Sidebar = ({ user, onLogout, unreadCount, isConnected }) => {
+  // Função para obter o nome do perfil baseado no role
+  const getRoleName = () => {
+    if (!user) return 'Usuário';
+    
+    switch(user.role) {
+      case 'SUPPORT':
+        return 'Suporte';
+      case 'COMPANY':
+        return 'Empresa';
+      case 'LOGISTICS':
+        return 'Logística';
+      case 'ADMIN':
+        return 'Administrador';
+      default:
+        return 'Cooperativa';
+    }
+  };
+
+  // Função para obter o ícone do perfil
+  const getRoleIcon = () => {
+    if (!user) return 'fas fa-user-circle';
+    
+    switch(user.role) {
+      case 'SUPPORT':
+        return 'fas fa-headset';
+      case 'COMPANY':
+        return 'fas fa-building';
+      case 'LOGISTICS':
+        return 'fas fa-truck';
+      case 'ADMIN':
+        return 'fas fa-crown';
+      default:
+        return 'fas fa-hand-holding-heart';
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
@@ -57,10 +93,10 @@ const Sidebar = ({ user, onLogout, unreadCount, isConnected }) => {
 
       <div className="sidebar-user">
         <div className="user-info">
-          <i className="fas fa-user-circle"></i>
+          <i className={getRoleIcon()}></i> {/* 👈 ÍCONE DINÂMICO */}
           <div>
             <p className="user-name">{user?.name || 'Usuário'}</p>
-            <p className="user-role">{user?.role === 'ADMIN' ? 'Administrador' : 'Cooperativa'}</p>
+            <p className="user-role">{getRoleName()}</p> {/* 👈 PERFIL DINÂMICO */}
           </div>
         </div>
         <button className="btn-logout" onClick={onLogout} title="Sair">

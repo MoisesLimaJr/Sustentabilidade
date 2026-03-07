@@ -27,7 +27,7 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const { api } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     points: 12,
     routes: 5,
@@ -35,6 +35,24 @@ const Home = () => {
     totalCarbon: 324
   });
   const [loading, setLoading] = useState(false);
+
+  // Função para obter a mensagem de boas-vindas baseada no role
+  const getWelcomeMessage = () => {
+    if (!user) return 'Bem-vindo ao EcoRoute!';
+    
+    switch(user.role) {
+      case 'SUPPORT':
+        return 'Bem-vindo, equipe de Suporte!';
+      case 'COMPANY':
+        return 'Bem-vindo, Empresa Parceira!';
+      case 'LOGISTICS':
+        return 'Bem-vindo, equipe de Logística!';
+      case 'ADMIN':
+        return 'Bem-vindo, Administrador!';
+      default:
+        return 'Bem-vindo, Cooperativa!';
+    }
+  };
 
   // Dados para o gráfico de coleta por tipo
   const wasteData = {
@@ -135,6 +153,17 @@ const Home = () => {
 
   return (
     <div className="home">
+      {/* 👉 CABEÇALHO DE BOAS-VINDAS SIMPLES E ORGANIZADO */}
+      <div className="welcome-header">
+        <div className="welcome-text">
+          <h2>{getWelcomeMessage()}</h2>
+          <p className="user-name">
+            <i className="fas fa-user-circle"></i>
+            {user?.name || 'Usuário'}
+          </p>
+        </div>
+      </div>
+
       {/* Cards de Estatísticas */}
       <div className="stats-grid">
         <div className="stat-card">
@@ -255,6 +284,36 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* CSS adicional para o cabeçalho */}
+      <style jsx>{`
+        .welcome-header {
+          margin-bottom: 25px;
+          padding: 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 12px;
+          color: white;
+        }
+
+        .welcome-text h2 {
+          margin: 0 0 8px 0;
+          font-size: 22px;
+          font-weight: 600;
+        }
+
+        .welcome-text .user-name {
+          margin: 0;
+          font-size: 15px;
+          opacity: 0.95;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .welcome-text .user-name i {
+          font-size: 18px;
+        }
+      `}</style>
     </div>
   );
 };

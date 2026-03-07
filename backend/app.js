@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const socketIo = require('socket.io');
 
 // Importar modelos e serviços
 const Message = require('./models/Message');
@@ -18,6 +20,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SOCKET_PORT = process.env.SOCKET_PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // ========== MIDDLEWARES DE SEGURANÇA E PERFORMANCE ==========
@@ -54,6 +57,80 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ========== CRIAR SERVIDOR HTTP E SOCKET.IO ==========
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: ["http://localhost:3000", "http://localhost"],
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
+});
+
+// ========== CONFIGURAÇÃO DO SOCKET.IO ==========
+io.on('connection', (socket) => {
+    console.log('🔌 Novo cliente conectado:', socket.id);
+    
+    // Entrar em uma sala (ex: por usuário ou rota)
+    socket.on('join-room', (room) => {
+        socket.join(room);
+        console.log(`📌 Cliente ${socket.id} entrou na sala: ${room}`);
+    });
+    
+    // Sair de uma sala
+    socket.on('leave-room', (room) => {
+        socket.leave(room);
+        console.log(`📌 Cliente ${socket.id} saiu da sala: ${room}`);
+    });
+    
+    // Enviar mensagem
+    socket.on('send-message', (data) => {
+        console.log(`💬 Mensagem de ${data.sender}: ${data.content}`);
+        
+        // Salvar no banco se necessário
+        if (data.save) {
+            const message = new Message({
+                content: data.content,
+                room: data.room || 'geral',
+                sender: data.userId,
+                senderName: data.senderName
+            });
+            message.save().catch(err => console.error('❌ Erro ao salvar mensagem:', err));
+        }
+        
+        // Emitir para a sala específica ou para todos
+        if (data.room) {
+            io.to(data.room).emit('new-message', data);
+        } else {
+            io.emit('new-message', data);
+        }
+    });
+    
+    // Notificação de nova coleta
+    socket.on('new-collection', (data) => {
+        io.emit('collection-update', data);
+    });
+    
+    // Atualização de rota
+    socket.on('route-update', (data) => {
+        io.emit('route-changed', data);
+    });
+    
+    // Desconexão
+    socket.on('disconnect', () => {
+        console.log('🔌 Cliente desconectado:', socket.id);
+    });
+    
+    // Erros
+    socket.on('error', (error) => {
+        console.error('❌ Erro no socket:', error);
+    });
+});
+
+// Tornar io acessível nas rotas
+app.set('io', io);
+
 // ========== CONFIGURAÇÃO DE CONEXÃO MULTI-AMBIENTE ==========
 const connectDB = async () => {
     try {
@@ -62,7 +139,6 @@ const connectDB = async () => {
         console.log('=================================');
         
         // Mostrar configuração atual
-        const isProduction = process.env.NODE_ENV === 'production';
         console.log(`📋 NODE_ENV: ${process.env.NODE_ENV || 'não definido'}`);
         
         let mongoURI = process.env.MONGODB_URI;
@@ -89,7 +165,7 @@ const connectDB = async () => {
         const safeURI = mongoURI.replace(/:([^@]+)@/, ':****@');
         console.log(`📍 Conectando a: ${safeURI}`);
         
-        // Opções de conexão otimizadas
+        // Opções de conexão otimizadas - removendo keepAlive obsoleto
         const mongooseOptions = {
             maxPoolSize: isProduction ? 50 : 10,
             minPoolSize: isProduction ? 10 : 2,
@@ -107,9 +183,7 @@ const connectDB = async () => {
                 tls: true,
                 tlsAllowInvalidCertificates: false,
                 tlsCAFile: undefined,
-            }),
-            keepAlive: true,
-            keepAliveInitialDelay: 300000,
+            })
         };
 
         console.log(`⚙️ Opções: Pool=${mongooseOptions.maxPoolSize}, Timeout=${mongooseOptions.serverSelectionTimeoutMS}ms`);
@@ -212,8 +286,8 @@ const userSchema = new mongoose.Schema({
     },
     role: { 
         type: String, 
-        default: 'COOPERATIVE',
-        enum: ['COOPERATIVE', 'ADMIN', 'DRIVER']
+        enum: ['COOPERATIVE', 'COMPANY', 'LOGISTICS', 'SUPPORT', 'ADMIN'],
+        default: 'COOPERATIVE'
     },
     phone: { 
         type: String,
@@ -430,7 +504,7 @@ const generateVerificationCode = () => {
 // ========== ROTAS DE AUTENTICAÇÃO ==========
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { email, password, name, phone, city, state } = req.body;
+        const { email, password, name, phone, city, state, role } = req.body;
 
         if (!email || !password || !name) {
             return res.status(400).json({ 
@@ -455,6 +529,10 @@ app.post('/api/auth/register', async (req, res) => {
         // Gerar código de verificação
         const verificationCode = generateVerificationCode();
 
+        // Validar se o role enviado é válido
+        const validRoles = ['COOPERATIVE', 'COMPANY', 'LOGISTICS', 'SUPPORT', 'ADMIN'];
+        const userRole = validRoles.includes(role) ? role : 'COOPERATIVE';
+
         const user = new User({
             email: email.toLowerCase(),
             password: hashedPassword,
@@ -462,7 +540,7 @@ app.post('/api/auth/register', async (req, res) => {
             phone,
             city,
             state: state?.toUpperCase(),
-            role: 'COOPERATIVE',
+            role: userRole,
             verificationCode,
             verificationCodeExpires: new Date(Date.now() + 10 * 60 * 1000) // 10 minutos
         });
@@ -718,6 +796,15 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
         
         await message.save();
         
+        // Notificar via socket
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('new-message', {
+                ...message.toJSON(),
+                timestamp: new Date()
+            });
+        }
+        
         // Notificar destinatário se for mensagem privada
         if (recipient) {
             await Notification.createMessageNotification(
@@ -864,6 +951,16 @@ app.post('/api/routes', authenticateToken, async (req, res) => {
         
         // Criar notificação
         await Notification.createRouteNotification(req.userId, route.name);
+        
+        // Notificar via socket
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('route-changed', {
+                type: 'new',
+                route,
+                timestamp: new Date()
+            });
+        }
 
         res.status(201).json({ 
             route, 
@@ -928,6 +1025,17 @@ app.post('/api/collections', authenticateToken, async (req, res) => {
             point.name,
             collectionData.wasteVolume
         );
+        
+        // Notificar via socket
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('collection-update', {
+                pointId: point._id,
+                pointName: point.name,
+                volume: collectionData.wasteVolume,
+                timestamp: new Date()
+            });
+        }
 
         if (collectionData.routeId) {
             await Route.updateOne(
@@ -1089,6 +1197,7 @@ app.get('/', (req, res) => {
         status: 'online',
         ambiente: process.env.NODE_ENV || 'desenvolvimento',
         database: mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado',
+        socket: 'disponível na porta ' + SOCKET_PORT,
         documentacao: '/api/docs',
         endpoints: {
             auth: {
@@ -1140,6 +1249,7 @@ app.get('/api/health', (req, res) => {
         status: 'OK',
         ambiente: process.env.NODE_ENV || 'desenvolvimento',
         database: mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado',
+        socket: 'rodando na porta ' + SOCKET_PORT,
         uptime: process.uptime(),
         memoria: process.memoryUsage(),
         timestamp: new Date().toISOString()
@@ -1235,38 +1345,59 @@ app.use((err, req, res, next) => {
     });
 });
 
-// ========== INICIAR SERVIDOR ==========
-const server = app.listen(PORT, () => {
+// ========== INICIAR SERVIDOR HTTP (API + SOCKET.IO) ==========
+server.listen(PORT, () => {
     console.log('\n=================================');
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📝 Ambiente: ${process.env.NODE_ENV || 'desenvolvimento'}`);
     console.log(`🍃 Banco: ${mongoose.connection.readyState === 1 ? 'conectado' : 'desconectado'}`);
+    console.log(`🔌 Socket.IO disponível na porta ${SOCKET_PORT}`);
     console.log(`📍 URL: http://localhost:${PORT}`);
     console.log(`📚 Documentação: http://localhost:${PORT}/api/docs`);
     console.log('=================================\n');
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM recebido, encerrando servidor...');
+// Iniciar Socket.IO na porta específica (opcional - se quiser separar)
+io.listen(SOCKET_PORT);
+console.log(`🔌 Socket.IO rodando na porta ${SOCKET_PORT}`);
+
+// ========== GRACEFUL SHUTDOWN (CORRIGIDO) ==========
+process.on('SIGTERM', async () => {
+    console.log('\n👋 SIGTERM recebido, encerrando servidor...');
+    
+    // Fechar servidor HTTP primeiro
     server.close(() => {
-        console.log('💤 Servidor encerrado');
-        mongoose.connection.close(false, () => {
-            console.log('💤 Conexão MongoDB encerrada');
-            process.exit(0);
-        });
+        console.log('💤 Servidor HTTP encerrado');
     });
+    
+    // Fechar conexão MongoDB (sem callback)
+    try {
+        await mongoose.connection.close();
+        console.log('💤 Conexão MongoDB encerrada');
+        process.exit(0);
+    } catch (err) {
+        console.error('❌ Erro ao encerrar MongoDB:', err);
+        process.exit(1);
+    }
 });
 
-process.on('SIGINT', () => {
-    console.log('👋 SIGINT recebido, encerrando servidor...');
+process.on('SIGINT', async () => {
+    console.log('\n👋 SIGINT recebido, encerrando servidor...');
+    
+    // Fechar servidor HTTP primeiro
     server.close(() => {
-        console.log('💤 Servidor encerrado');
-        mongoose.connection.close(false, () => {
-            console.log('💤 Conexão MongoDB encerrada');
-            process.exit(0);
-        });
+        console.log('💤 Servidor HTTP encerrado');
     });
+    
+    // Fechar conexão MongoDB (sem callback)
+    try {
+        await mongoose.connection.close();
+        console.log('💤 Conexão MongoDB encerrada');
+        process.exit(0);
+    } catch (err) {
+        console.error('❌ Erro ao encerrar MongoDB:', err);
+        process.exit(1);
+    }
 });
 
 module.exports = app;

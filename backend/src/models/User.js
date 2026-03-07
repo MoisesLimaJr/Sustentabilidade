@@ -19,12 +19,49 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['COOPERATIVE', 'ADMIN'],
+        enum: ['COOPERATIVE', 'COMPANY', 'LOGISTICS', 'SUPPORT', 'ADMIN'],
         default: 'COOPERATIVE'
     },
-    phone: String,
-    city: String,
-    state: String,
+    phone: {
+        type: String,
+        default: ''
+    },
+    city: {
+        type: String,
+        default: ''
+    },
+    state: {
+        type: String,
+        default: ''
+    },
+    // Campos específicos para Empresa
+    companyName: {
+        type: String,
+        default: ''
+    },
+    cnpj: {
+        type: String,
+        default: ''
+    },
+    // Campos específicos para Suporte
+    department: {
+        type: String,
+        enum: ['general', 'technical', 'billing', ''],
+        default: ''
+    },
+    isAvailable: {
+        type: Boolean,
+        default: true
+    },
+    // Status da conta
+    active: {
+        type: Boolean,
+        default: true
+    },
+    lastLogin: {
+        type: Date,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -50,12 +87,18 @@ UserSchema.pre('save', async function(next) {
     }
 });
 
+// Atualizar updatedAt antes de salvar
+UserSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
 // Método para comparar senhas
 UserSchema.methods.comparePassword = async function(password) {
     return await bcrypt.compare(password, this.password);
 };
 
-// Remover senha ao converter para JSON
+// Remover senha e campos sensíveis ao converter para JSON
 UserSchema.set('toJSON', {
     transform: function(doc, ret) {
         delete ret.password;
@@ -63,5 +106,10 @@ UserSchema.set('toJSON', {
         return ret;
     }
 });
+
+// Índices para busca otimizada
+UserSchema.index({ email: 1 });
+UserSchema.index({ role: 1 });
+UserSchema.index({ city: 1, state: 1 });
 
 module.exports = mongoose.model('User', UserSchema);
