@@ -21,20 +21,20 @@ export const SocketProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [typingUsers, setTypingUsers] = useState({});
   const [supportRequests, setSupportRequests] = useState([]);
-  const [activeSupportChat, setActiveSupportChat] = useState(null);
+  const [activeSupportChats, setActiveSupportChats] = useState([]); // 👈 ARRAY DE CHATS ATIVOS
+  const [availableSupports, setAvailableSupports] = useState([]);
+  const [transferInProgress, setTransferInProgress] = useState(false);
   
   const { user, token } = useAuth();
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef({});
 
   useEffect(() => {
-    // Só conectar se tiver usuário e token
     if (!user || !token) {
       console.log('⏳ Aguardando usuário e token...');
       return;
     }
 
-    // URL do socket (com fallback)
     const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000';
     
     console.log('🔌 Conectando ao socket:', socketUrl);
@@ -42,7 +42,6 @@ export const SocketProvider = ({ children }) => {
     console.log('👤 Usuário:', user?.email);
     console.log('👤 Role:', user?.role);
 
-    // Criar conexão
     const newSocket = io(socketUrl, {
       auth: { 
         token,
@@ -65,8 +64,6 @@ export const SocketProvider = ({ children }) => {
     newSocket.on('connect', () => {
       console.log('✅ Conectado ao socket! ID:', newSocket.id);
       setIsConnected(true);
-      
-      // Registrar usuário no servidor
       newSocket.emit('user-connected', {
         userId: user._id,
         name: user.name,
@@ -77,8 +74,6 @@ export const SocketProvider = ({ children }) => {
     newSocket.on('disconnect', (reason) => {
       console.log('🔌 Desconectado do socket:', reason);
       setIsConnected(false);
-      
-      // Tentar reconectar se não foi intencional
       if (reason === 'io server disconnect' || reason === 'transport close') {
         console.log('🔄 Tentando reconectar...');
         setTimeout(() => {
@@ -95,8 +90,6 @@ export const SocketProvider = ({ children }) => {
     newSocket.on('reconnect', (attemptNumber) => {
       console.log('🔄 Socket reconectado após', attemptNumber, 'tentativas');
       setIsConnected(true);
-      
-      // Re-registrar usuário
       newSocket.emit('user-connected', {
         userId: user._id,
         name: user.name,
@@ -106,23 +99,18 @@ export const SocketProvider = ({ children }) => {
 
     // ========== EVENTOS DE USUÁRIOS ONLINE ==========
     newSocket.on('online-users', (users) => {
-      // ✅ VERIFICAÇÃO: garantir que users é um array
       if (Array.isArray(users)) {
         console.log('👥 Usuários online:', users.length);
         setOnlineUsers(users);
-        
-        // Filtrar suportes online
         const supports = users.filter(u => u.role === 'SUPPORT' || u.role === 'ADMIN');
         setOnlineSupports(supports);
       } else {
-        console.log('⚠️ online-users não é um array:', users);
         setOnlineUsers([]);
         setOnlineSupports([]);
       }
     });
 
     newSocket.on('user-joined', (userData) => {
-      console.log('➕ Usuário entrou:', userData.name);
       setOnlineUsers(prev => {
         if (!Array.isArray(prev)) return [userData];
         if (prev.some(u => u.userId === userData.userId)) return prev;
@@ -131,7 +119,6 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('user-left', (userId) => {
-      console.log('➖ Usuário saiu:', userId);
       setOnlineUsers(prev => {
         if (!Array.isArray(prev)) return [];
         return prev.filter(u => u.userId !== userId);
@@ -145,17 +132,13 @@ export const SocketProvider = ({ children }) => {
         const current = prev || {};
         const room = message?.room || 'geral';
         const roomMessages = Array.isArray(current[room]) ? current[room] : [];
-        
-        // Evitar duplicatas
         if (roomMessages.some(m => m?._id === message?._id)) return current;
-        
         return {
           ...current,
           [room]: [...roomMessages, message]
         };
       });
 
-      // Notificação de nova mensagem (se não for do usuário atual)
       if (message.sender !== user?._id) {
         const notification = {
           id: `msg_${message._id}`,
@@ -188,7 +171,6 @@ export const SocketProvider = ({ children }) => {
       setMessages(prev => {
         const current = prev || {};
         const roomMessages = Array.isArray(current[room]) ? current[room] : [];
-        
         return {
           ...current,
           [room]: roomMessages.map(msg => 
@@ -210,7 +192,6 @@ export const SocketProvider = ({ children }) => {
         }
       }));
 
-      // Limpar status de digitação após 3 segundos
       if (isTyping) {
         if (typingTimeoutRef.current[userId]) {
           clearTimeout(typingTimeoutRef.current[userId]);
@@ -233,7 +214,6 @@ export const SocketProvider = ({ children }) => {
       console.log('🔔 Nova notificação:', notification);
       setNotifications(prev => {
         const current = Array.isArray(prev) ? prev : [];
-        // Evitar duplicatas
         if (current.some(n => n.id === notification?.id)) return current;
         return [notification, ...current];
       });
@@ -245,16 +225,16 @@ export const SocketProvider = ({ children }) => {
       if (user?.role === 'SUPPORT' || user?.role === 'ADMIN') {
         setSupportRequests(prev => {
           const current = Array.isArray(prev) ? prev : [];
+          if (current.some(r => r.id === request.id)) return current;
           return [request, ...current];
         });
         
-        // Notificação para suporte
         const notification = {
           id: `support_${request.userId}_${Date.now()}`,
           type: 'support_request',
-          title: 'Nova solicitação de suporte',
-          message: `${request.userName} precisa de ajuda`,
-          request,
+          title: '🆘 Nova solicitação de suporte',
+          message: `${request.userName} precisa de ajuda (${request.department || 'Geral'})`,
+          data: request,
           timestamp: new Date(),
           read: false,
           sound: true
@@ -267,11 +247,63 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
+    // ========== EVENTO: SOLICITAÇÃO ACEITA POR OUTRO SUPORTE ==========
+    newSocket.on('support-request-accepted', ({ requestId, acceptedBy, acceptedByUserId }) => {
+      console.log(`📞 Solicitação ${requestId} foi aceita por ${acceptedBy}`);
+      
+      if (acceptedByUserId !== user?._id) {
+        setSupportRequests(prev => {
+          const current = Array.isArray(prev) ? prev : [];
+          return current.filter(r => r.id !== requestId);
+        });
+        
+        setNotifications(prev => {
+          const current = Array.isArray(prev) ? prev : [];
+          return current.filter(n => 
+            !(n.type === 'support_request' && n.data?.id === requestId)
+          );
+        });
+      }
+    });
+
+    // ========== EVENTO: SOLICITAÇÃO EXPIRADA ==========
+    newSocket.on('support-request-expired', ({ requestId, message }) => {
+      console.log(`⏰ Solicitação ${requestId} expirou:`, message);
+      
+      setSupportRequests(prev => {
+        const current = Array.isArray(prev) ? prev : [];
+        return current.filter(r => r.id !== requestId);
+      });
+      
+      setNotifications(prev => {
+        const current = Array.isArray(prev) ? prev : [];
+        return current.filter(n => 
+          !(n.type === 'support_request' && n.data?.id === requestId)
+        );
+      });
+    });
+
+    // ========== EVENTO: SUPORTE ATRIBUÍDO ==========
     newSocket.on('support-assigned', ({ room, support, message }) => {
       console.log('🎯 Suporte atribuído:', support);
-      setActiveSupportChat({ room, support });
       
-      // Adicionar mensagem de sistema
+      // 👇 ADICIONAR À LISTA DE CHATS ATIVOS (NÃO SUBSTITUIR)
+      setActiveSupportChats(prev => {
+        const current = Array.isArray(prev) ? prev : [];
+        // Verificar se já não existe
+        if (current.some(chat => chat.room === room)) {
+          return current;
+        }
+        // Adicionar novo chat
+        return [...current, { 
+          room, 
+          support, 
+          userId: message.userId,
+          lastMessage: message,
+          unreadCount: 0
+        }];
+      });
+      
       setMessages(prev => {
         const current = prev || {};
         const roomMessages = Array.isArray(current[room]) ? current[room] : [];
@@ -282,13 +314,13 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    // ========== EVENTO: CHAT ENCERRADO ==========
     newSocket.on('chat-ended', ({ room }) => {
       console.log('🔚 Chat encerrado:', room);
       
-      // Adicionar mensagem de sistema
       const systemMessage = {
         _id: `system_${Date.now()}`,
-        content: 'Chat encerrado',
+        content: '🔸 Chat encerrado',
         senderName: 'Sistema',
         sender: 'system',
         room,
@@ -305,32 +337,65 @@ export const SocketProvider = ({ children }) => {
         };
       });
       
-      setActiveSupportChat(null);
+      // 👇 REMOVER DA LISTA DE CHATS ATIVOS
+      setActiveSupportChats(prev => 
+        Array.isArray(prev) ? prev.filter(chat => chat.room !== room) : []
+      );
     });
 
-    newSocket.on('support-typing', ({ userId, name, isTyping }) => {
-      if (activeSupportChat) {
-        setTypingUsers(prev => ({
-          ...(prev || {}),
-          [activeSupportChat.room]: {
-            ...(prev[activeSupportChat.room] || {}),
-            [userId]: { name, isTyping }
-          }
-        }));
+    // ========== EVENTOS DE TRANSFERÊNCIA ==========
+    newSocket.on('available-supports', (supports) => {
+      console.log('📋 Suportes disponíveis:', supports);
+      setAvailableSupports(Array.isArray(supports) ? supports : []);
+    });
+
+    newSocket.on('transfer-started', (data) => {
+      console.log('🔄 Transferência iniciada:', data);
+      setTransferInProgress(true);
+    });
+
+    newSocket.on('transfer-complete', (data) => {
+      console.log('✅ Transferência concluída:', data);
+      setTransferInProgress(false);
+      if (data.room) {
+        // 👇 REMOVER DA LISTA DE CHATS ATIVOS (será adicionado novamente quando o novo suporte aceitar)
+        setActiveSupportChats(prev => 
+          Array.isArray(prev) ? prev.filter(chat => chat.room !== data.room) : []
+        );
+      }
+    });
+
+    newSocket.on('transfer-error', (data) => {
+      console.error('❌ Erro na transferência:', data);
+      setTransferInProgress(false);
+    });
+
+    newSocket.on('support-transferred', (data) => {
+      console.log('📨 Chamado transferido para você:', data);
+      if (data.room) {
+        // 👇 ADICIONAR À LISTA DE CHATS ATIVOS
+        setActiveSupportChats(prev => {
+          const current = Array.isArray(prev) ? prev : [];
+          if (current.some(chat => chat.room === data.room)) return current;
+          return [...current, { 
+            room: data.room, 
+            support: { id: user?._id, name: user?.name },
+            userId: data.originalUserId,
+            userName: data.originalUserName,
+            lastMessage: data.message,
+            unreadCount: 0
+          }];
+        });
       }
     });
 
     setSocket(newSocket);
 
-    // Cleanup na desconexão
     return () => {
       console.log('🧹 Limpando conexão do socket');
-      
-      // Limpar todos os timeouts de digitação
       Object.keys(typingTimeoutRef.current).forEach(key => {
         clearTimeout(typingTimeoutRef.current[key]);
       });
-      
       if (newSocket.connected) {
         newSocket.emit('user-disconnected', user._id);
         newSocket.disconnect();
@@ -340,14 +405,11 @@ export const SocketProvider = ({ children }) => {
   }, [user, token]);
 
   // ========== FUNÇÕES DO SOCKET ==========
-
-  // Enviar mensagem
   const sendMessage = useCallback((room, content, recipient = null) => {
     if (!socketRef.current?.connected) {
       console.warn('⚠️ Socket não conectado');
       return false;
     }
-    
     const messageData = {
       room,
       content,
@@ -357,51 +419,39 @@ export const SocketProvider = ({ children }) => {
       senderRole: user?.role,
       timestamp: new Date().toISOString()
     };
-    
     socketRef.current.emit('send-message', messageData);
     return true;
   }, [user]);
 
-  // Entrar em uma sala
   const joinRoom = useCallback((room) => {
     if (!socketRef.current?.connected) {
       console.warn('⚠️ Socket não conectado');
       return false;
     }
-    
     console.log(`👥 Entrando na sala: ${room}`);
     socketRef.current.emit('join-room', room);
-    
-    // Solicitar histórico da sala
     socketRef.current.emit('request-history', room);
-    
     return true;
   }, [user]);
 
-  // Sair de uma sala
   const leaveRoom = useCallback((room) => {
     if (!socketRef.current?.connected) return false;
-    
     console.log(`👋 Saindo da sala: ${room}`);
     socketRef.current.emit('leave-room', room);
     return true;
   }, [user]);
 
-  // Indicar que está digitando
   const sendTyping = useCallback((room, isTyping) => {
     if (!socketRef.current?.connected) return false;
-    
     socketRef.current.emit('typing', {
       room,
       userId: user?._id,
       name: user?.name,
       isTyping
     });
-    
     return true;
   }, [user]);
 
-  // Obter usuários digitando em uma sala
   const getTypingUsers = useCallback((room) => {
     const roomData = typingUsers[room] || {};
     return Object.values(roomData)
@@ -409,41 +459,19 @@ export const SocketProvider = ({ children }) => {
       .map(data => data.name);
   }, [typingUsers]);
 
-  // Marcar mensagem como lida
   const markMessageAsRead = useCallback((messageId, room) => {
     if (!socketRef.current?.connected) return false;
-    
     socketRef.current.emit('message-read', {
       messageId,
       room,
       userId: user?._id
     });
-    
-    return true;
-  }, [user]);
-
-  // Enviar notificação
-  const sendNotification = useCallback((recipientId, notification) => {
-    if (!socketRef.current?.connected) return false;
-    
-    socketRef.current.emit('send-notification', {
-      recipient: recipientId,
-      notification: {
-        ...notification,
-        senderId: user?._id,
-        senderName: user?.name,
-        timestamp: new Date().toISOString()
-      }
-    });
     return true;
   }, [user]);
 
   // ========== FUNÇÕES DE SUPORTE ==========
-
-  // Solicitar suporte
   const requestSupport = useCallback((department = 'general') => {
     if (!socketRef.current?.connected) return false;
-    
     console.log('🎯 Solicitando suporte...');
     socketRef.current.emit('request-support', {
       userId: user?._id,
@@ -451,29 +479,26 @@ export const SocketProvider = ({ children }) => {
       department,
       timestamp: new Date().toISOString()
     });
-    
     return true;
   }, [user]);
 
-  // Aceitar solicitação de suporte (para suportes)
-  const acceptSupportRequest = useCallback((requestId, userId) => {
+  const acceptSupportRequest = useCallback((requestId, userId, userName) => {
     if (!socketRef.current?.connected) return false;
     if (user?.role !== 'SUPPORT' && user?.role !== 'ADMIN') return false;
     
     console.log('✅ Aceitando solicitação de suporte:', requestId);
-    
-    // Criar sala única para o chat
     const room = `support_${userId}_${user?._id}`;
     
     socketRef.current.emit('accept-support', {
       requestId,
       userId,
+      userName,
       supportId: user?._id,
       supportName: user?.name,
       room
     });
     
-    // Remover da lista de solicitações
+    // Remover da lista local imediatamente
     setSupportRequests(prev => {
       const current = Array.isArray(prev) ? prev : [];
       return current.filter(r => r.id !== requestId);
@@ -482,10 +507,8 @@ export const SocketProvider = ({ children }) => {
     return room;
   }, [user]);
 
-  // Finalizar chat de suporte
   const endSupportChat = useCallback((room, userId) => {
     if (!socketRef.current?.connected) return false;
-    
     console.log('🔚 Finalizando chat de suporte:', room);
     socketRef.current.emit('end-support', {
       room,
@@ -493,13 +516,53 @@ export const SocketProvider = ({ children }) => {
       supportId: user?._id
     });
     
-    setActiveSupportChat(null);
+    // 👇 REMOVER DA LISTA DE CHATS ATIVOS
+    setActiveSupportChats(prev => 
+      Array.isArray(prev) ? prev.filter(chat => chat.room !== room) : []
+    );
+    
     return true;
   }, [user]);
 
-  // ========== FUNÇÕES DE NOTIFICAÇÃO ==========
+  // ========== FUNÇÕES DE TRANSFERÊNCIA ==========
+  const getAvailableSupports = useCallback(() => {
+    if (!socketRef.current?.connected) return;
+    socketRef.current.emit('get-available-supports');
+  }, []);
 
-  // Marcar notificação como lida
+  const transferSupport = useCallback((room, targetSupportId, originalUserId, originalUserName) => {
+    if (!socketRef.current?.connected) {
+      console.warn('⚠️ Socket não conectado');
+      return false;
+    }
+    console.log(`🔄 Transferindo chamado ${room} para ${targetSupportId}`);
+    socketRef.current.emit('transfer-support', {
+      room,
+      targetSupportId,
+      originalUserId,
+      originalUserName
+    });
+    return true;
+  }, []);
+
+  // ========== FUNÇÕES AUXILIARES ==========
+  const getActiveChatByRoom = useCallback((room) => {
+    if (!Array.isArray(activeSupportChats)) return null;
+    return activeSupportChats.find(chat => chat.room === room);
+  }, [activeSupportChats]);
+
+  // 👇 NOVA FUNÇÃO: OBTER TODOS OS CHATS ATIVOS
+  const getAllActiveChats = useCallback(() => {
+    return Array.isArray(activeSupportChats) ? activeSupportChats : [];
+  }, [activeSupportChats]);
+
+  // 👇 NOVA FUNÇÃO: OBTER CHATS POR USUÁRIO
+  const getChatsByUser = useCallback((userId) => {
+    if (!Array.isArray(activeSupportChats)) return [];
+    return activeSupportChats.filter(chat => chat.userId === userId);
+  }, [activeSupportChats]);
+
+  // ========== FUNÇÕES DE NOTIFICAÇÃO ==========
   const markNotificationAsRead = useCallback((notificationId) => {
     setNotifications(prev => {
       const current = Array.isArray(prev) ? prev : [];
@@ -509,7 +572,6 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  // Marcar todas notificações como lidas
   const markAllNotificationsAsRead = useCallback(() => {
     setNotifications(prev => {
       const current = Array.isArray(prev) ? prev : [];
@@ -517,12 +579,10 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  // Limpar notificações
   const clearNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
 
-  // Remover notificação específica
   const removeNotification = useCallback((notificationId) => {
     setNotifications(prev => {
       const current = Array.isArray(prev) ? prev : [];
@@ -530,7 +590,6 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  // Obter mensagens não lidas em uma sala
   const getUnreadCount = useCallback((room) => {
     const roomMessages = (messages[room] || []);
     return roomMessages.filter(msg => 
@@ -539,13 +598,12 @@ export const SocketProvider = ({ children }) => {
     ).length;
   }, [messages, user]);
 
-  // Obter última mensagem de uma sala
   const getLastMessage = useCallback((room) => {
     const roomMessages = messages[room] || [];
     return roomMessages[roomMessages.length - 1];
   }, [messages]);
 
-  // Valor do contexto
+  // ========== VALOR DO CONTEXTO ==========
   const value = {
     // Estado
     socket: socketRef.current,
@@ -556,7 +614,9 @@ export const SocketProvider = ({ children }) => {
     messages: messages || {},
     typingUsers: typingUsers || {},
     supportRequests: Array.isArray(supportRequests) ? supportRequests : [],
-    activeSupportChat,
+    activeSupportChats: Array.isArray(activeSupportChats) ? activeSupportChats : [], // 👈 AGORA É ARRAY
+    availableSupports: Array.isArray(availableSupports) ? availableSupports : [],
+    transferInProgress,
     
     // Funções gerais
     sendMessage,
@@ -568,17 +628,23 @@ export const SocketProvider = ({ children }) => {
     getUnreadCount,
     getLastMessage,
     
-    // Funções de notificação
-    sendNotification,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-    clearNotifications,
-    removeNotification,
-    
     // Funções de suporte
     requestSupport,
     acceptSupportRequest,
     endSupportChat,
+    getActiveChatByRoom,
+    getAllActiveChats, // 👈 NOVA FUNÇÃO
+    getChatsByUser,    // 👈 NOVA FUNÇÃO
+    
+    // Funções de transferência
+    getAvailableSupports,
+    transferSupport,
+    
+    // Funções de notificação
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    clearNotifications,
+    removeNotification,
     
     // Contadores
     unreadCount: Array.isArray(notifications) 
@@ -586,6 +652,9 @@ export const SocketProvider = ({ children }) => {
       : 0,
     pendingSupportRequests: Array.isArray(supportRequests) 
       ? supportRequests.length 
+      : 0,
+    activeChatsCount: Array.isArray(activeSupportChats) 
+      ? activeSupportChats.length 
       : 0
   };
 

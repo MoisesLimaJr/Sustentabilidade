@@ -449,3 +449,186 @@
   transform: translateX(100%);
   transition: opacity 300ms, transform 300ms;
 }
+
+/* Botões de ação nas notificações */
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s;
+}
+
+.btn-action.accept {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-action.accept:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-action.transfer {
+  background: #3498db;
+  color: white;
+}
+
+.btn-action.transfer:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-action i {
+  font-size: 12px;
+}
+
+/* Botões de ação nas notificações */
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.btn-action.accept {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-action.accept:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-action.transfer {
+  background: #3498db;
+  color: white;
+}
+
+.btn-action.transfer:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-action i {
+  font-size: 14px;
+}
+
+/* Badges de dados */
+.notification-item-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.data-tag {
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.data-tag strong {
+  color: #333;
+  margin-right: 4px;
+}
+
+/* Botões de ação nas notificações */
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.btn-action.accept {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-action.accept:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-action.transfer {
+  background: #3498db;
+  color: white;
+}
+
+.btn-action.transfer:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-action i {
+  font-size: 14px;
+}
+
+/* Badges de dados */
+.notification-item-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.data-tag {
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.data-tag strong {
+  color: #333;
+  margin-right: 4px;
+}

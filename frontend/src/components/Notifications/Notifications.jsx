@@ -1,58 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { useSocket } from '../../contexts/SocketContext'; // Corrigido o caminho
+import { useSocket } from '../../contexts/SocketContext';
 import NotificationItem from './NotificationItem';
 import './Notifications.css';
 
 const Notifications = () => {
-  // Usando as funções corretas do SocketContext
   const { 
     notifications, 
-    markNotificationAsRead,  // 👈 Nome corrigido
+    markNotificationAsRead, 
     clearNotifications, 
-    unreadCount: socketUnreadCount 
+    unreadCount 
   } = useSocket();
   
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Garantir que notifications é um array
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+
   // Calcular estatísticas
-  const totalCount = notifications.length;
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const readCount = totalCount - unreadCount;
+  const totalCount = safeNotifications.length;
+  const unreadCountValue = safeNotifications.filter(n => !n?.read).length;
+  const readCount = totalCount - unreadCountValue;
 
   // Filtrar e ordenar notificações
-  const filteredNotifications = notifications
+  const filteredNotifications = safeNotifications
     .filter(notif => {
       // Filtro por status
-      if (filter === 'unread' && notif.read) return false;
-      if (filter === 'read' && !notif.read) return false;
+      if (filter === 'unread' && notif?.read) return false;
+      if (filter === 'read' && !notif?.read) return false;
+      
+      // Filtro por tipo
+      if (filter === 'support' && notif?.type !== 'support_request' && notif?.type !== 'support_accepted') return false;
+      if (filter === 'message' && notif?.type !== 'message') return false;
       
       // Filtro por busca
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         return (
-          (notif.title?.toLowerCase() || '').includes(term) ||
-          (notif.message?.toLowerCase() || '').includes(term)
+          (notif?.title?.toLowerCase() || '').includes(term) ||
+          (notif?.message?.toLowerCase() || '').includes(term)
         );
       }
       
       return true;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.timestamp || a.createdAt || 0);
-      const dateB = new Date(b.timestamp || b.createdAt || 0);
+      const dateA = new Date(a?.timestamp || a?.createdAt || 0);
+      const dateB = new Date(b?.timestamp || b?.createdAt || 0);
       
-      if (sortBy === 'newest') {
-        return dateB - dateA;
-      } else {
-        return dateA - dateB;
-      }
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
   const handleMarkAllAsRead = () => {
-    notifications.forEach(notif => {
-      if (!notif.read && notif.id) {
+    safeNotifications.forEach(notif => {
+      if (!notif?.read && notif?.id) {
         markNotificationAsRead(notif.id);
       }
     });
@@ -64,19 +66,6 @@ const Notifications = () => {
     }
   };
 
-  const handleMarkAsRead = (id) => {
-    markNotificationAsRead(id);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('Remover esta notificação?')) {
-      // Se você tiver uma função de delete no contexto
-      // deleteNotification(id);
-      // Por enquanto, vamos apenas marcar como lida
-      markNotificationAsRead(id);
-    }
-  };
-
   return (
     <div className="notifications-page">
       <div className="notifications-header">
@@ -85,8 +74,8 @@ const Notifications = () => {
             <i className="fas fa-bell"></i>
             Notificações
           </h2>
-          {unreadCount > 0 && (
-            <span className="unread-badge">{unreadCount} não lida(s)</span>
+          {unreadCountValue > 0 && (
+            <span className="unread-badge">{unreadCountValue} não lida(s)</span>
           )}
         </div>
 
@@ -94,7 +83,7 @@ const Notifications = () => {
           <button 
             className="btn-action"
             onClick={handleMarkAllAsRead}
-            disabled={unreadCount === 0}
+            disabled={unreadCountValue === 0}
           >
             <i className="fas fa-check-double"></i>
             Marcar todas como lidas
@@ -130,6 +119,8 @@ const Notifications = () => {
             <option value="all">Todas</option>
             <option value="unread">Não lidas</option>
             <option value="read">Lidas</option>
+            <option value="support">Suporte</option>
+            <option value="message">Mensagens</option>
           </select>
 
           <select 
@@ -149,7 +140,7 @@ const Notifications = () => {
           <span className="stat-label">Total</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{unreadCount}</span>
+          <span className="stat-value">{unreadCountValue}</span>
           <span className="stat-label">Não lidas</span>
         </div>
         <div className="stat-card">
@@ -169,7 +160,7 @@ const Notifications = () => {
               {searchTerm 
                 ? 'Nenhuma notificação encontrada com este termo'
                 : filter !== 'all' 
-                ? `Nenhuma notificação ${filter === 'unread' ? 'não lida' : 'lida'}`
+                ? `Nenhuma notificação ${filter === 'unread' ? 'não lida' : filter === 'read' ? 'lida' : 'deste tipo'}`
                 : 'Você não tem notificações no momento'}
             </p>
           </div>
@@ -178,8 +169,7 @@ const Notifications = () => {
             <NotificationItem
               key={notification.id || notification._id}
               notification={notification}
-              onMarkAsRead={handleMarkAsRead}
-              onDelete={handleDelete}
+              onMarkAsRead={markNotificationAsRead}
             />
           ))
         )}
