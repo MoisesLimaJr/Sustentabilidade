@@ -23,6 +23,18 @@ const RoutesList = () => {
     }
   ]);
 
+  // Estados para modais
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    points: '',
+    distance: '',
+    waste: '',
+    status: ''
+  });
+
   const getStatusColor = (status) => {
     switch(status) {
       case 'PLANNED': return '#ff9800';
@@ -39,6 +51,44 @@ const RoutesList = () => {
       case 'COMPLETED': return 'Concluída';
       default: return status;
     }
+  };
+
+  // ========== FUNÇÃO VER DETALHES ==========
+  const handleViewDetails = (route) => {
+    setSelectedRoute(route);
+    setShowDetailsModal(true);
+  };
+
+  // ========== FUNÇÃO ABRIR EDITAR ==========
+  const handleEdit = (route) => {
+    setSelectedRoute(route);
+    setEditFormData({
+      name: route.name,
+      points: route.points,
+      distance: route.distance,
+      waste: route.waste,
+      status: route.status
+    });
+    setShowEditModal(true);
+  };
+
+  // ========== FUNÇÃO SALVAR EDIÇÃO ==========
+  const handleSaveEdit = () => {
+    const updatedRoutes = routes.map(route => 
+      route.id === selectedRoute.id 
+        ? { 
+            ...route, 
+            name: editFormData.name,
+            points: editFormData.points,
+            distance: editFormData.distance,
+            waste: editFormData.waste,
+            status: editFormData.status
+          } 
+        : route
+    );
+    setRoutes(updatedRoutes);
+    setShowEditModal(false);
+    setSelectedRoute(null);
   };
 
   return (
@@ -95,15 +145,129 @@ const RoutesList = () => {
               </div>
 
               <div className="route-footer">
-                <button className="btn-view">
+                <button 
+                  className="btn-view"
+                  onClick={() => handleViewDetails(route)}
+                >
                   <i className="fas fa-eye"></i> Ver Detalhes
                 </button>
-                <button className="btn-edit">
+                <button 
+                  className="btn-edit"
+                  onClick={() => handleEdit(route)}
+                >
                   <i className="fas fa-edit"></i> Editar
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ========== MODAL DE DETALHES ========== */}
+      {showDetailsModal && selectedRoute && (
+        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Detalhes da Rota</h2>
+              <button className="close" onClick={() => setShowDetailsModal(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="details-section">
+                <h3>Informações Gerais</h3>
+                <p><strong>Nome:</strong> {selectedRoute.name}</p>
+                <p><strong>Data:</strong> {new Date(selectedRoute.date).toLocaleDateString('pt-BR')}</p>
+                <p><strong>Status:</strong> {getStatusText(selectedRoute.status)}</p>
+              </div>
+
+              <div className="details-section">
+                <h3>Métricas</h3>
+                <p><strong>Pontos de Coleta:</strong> {selectedRoute.points}</p>
+                <p><strong>Distância Total:</strong> {selectedRoute.distance} km</p>
+                <p><strong>Volume Coletado:</strong> {selectedRoute.waste} kg</p>
+              </div>
+
+              <div className="details-section">
+                <h3>Estimativa de Impacto</h3>
+                <p><strong>CO₂ Economizado:</strong> {Math.round(selectedRoute.waste * 0.13)} kg</p>
+                <p><strong>Água Economizada:</strong> {selectedRoute.waste * 5} L</p>
+                <p><strong>Combustível Economizado:</strong> {Math.round(selectedRoute.distance * 0.35)} L</p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowDetailsModal(false)}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========== MODAL DE EDIÇÃO ========== */}
+      {showEditModal && selectedRoute && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Rota</h2>
+              <button className="close" onClick={() => setShowEditModal(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Nome da Rota</label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+                  placeholder="Ex: Rota Zona Norte"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Pontos de Coleta</label>
+                  <input
+                    type="number"
+                    value={editFormData.points}
+                    onChange={(e) => setEditFormData({...editFormData, points: parseInt(e.target.value)})}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Distância (km)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editFormData.distance}
+                    onChange={(e) => setEditFormData({...editFormData, distance: parseFloat(e.target.value)})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Volume Coletado (kg)</label>
+                  <input
+                    type="number"
+                    value={editFormData.waste}
+                    onChange={(e) => setEditFormData({...editFormData, waste: parseInt(e.target.value)})}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                  >
+                    <option value="PLANNED">Planejada</option>
+                    <option value="IN_PROGRESS">Em Andamento</option>
+                    <option value="COMPLETED">Concluída</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowEditModal(false)}>Cancelar</button>
+              <button className="btn-primary" onClick={handleSaveEdit}>Salvar Alterações</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
