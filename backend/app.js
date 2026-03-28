@@ -231,7 +231,7 @@ const collectionPointSchema = new mongoose.Schema({
     },
     wasteTypes: [{
         type: String,
-        enum: ['Plástico', 'Papel', 'Vidro', 'Metal', 'Orgânico', 'Eletrônico']
+        enum: ['plastico', 'papel', 'vidro', 'metal', 'organico', 'eletronico']
     }],
     capacity: { 
         type: Number, 
@@ -654,6 +654,34 @@ app.get('/api/points', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Erro ao listar pontos:', error);
         res.status(500).json({ error: 'Erro ao listar pontos de coleta' });
+    }
+});
+
+// ========== DELETAR PONTO DE COLETA ==========
+app.delete('/api/points/:id', authenticateToken, async (req, res) => {
+    try {
+        console.log('🗑️ Tentando deletar ponto ID:', req.params.id);
+        console.log('👤 Usuário ID:', req.userId);
+        
+        const point = await CollectionPoint.findOneAndDelete({ 
+            _id: req.params.id, 
+            userId: req.userId 
+        });
+        
+        if (!point) {
+            console.log('❌ Ponto não encontrado ou não pertence ao usuário');
+            return res.status(404).json({ error: 'Ponto não encontrado' });
+        }
+        
+        console.log('✅ Ponto deletado com sucesso:', point.name);
+        res.json({ 
+            message: 'Ponto deletado com sucesso',
+            deletedPoint: point 
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao deletar ponto:', error);
+        res.status(500).json({ error: 'Erro ao deletar ponto de coleta' });
     }
 });
 
