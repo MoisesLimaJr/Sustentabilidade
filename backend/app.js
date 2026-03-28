@@ -388,6 +388,7 @@ const generateVerificationCode = () => {
 };
 
 // ========== ROTAS DE AUTENTICAÇÃO ==========
+// ========== ROTAS DE AUTENTICAÇÃO ==========
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password, name, phone, city, state, role } = req.body;
@@ -418,7 +419,7 @@ app.post('/api/auth/register', async (req, res) => {
         // Criar usuário - a senha será hasheada automaticamente pelo pre('save')
         const user = new User({
             email: email.toLowerCase(),
-            password: password, // O hash será feito automaticamente
+            password: password,
             name: name.trim(),
             phone: phone || '',
             city: city || '',
@@ -427,6 +428,19 @@ app.post('/api/auth/register', async (req, res) => {
         });
 
         await user.save();
+
+        // ========== ENVIAR EMAIL DE BOAS-VINDAS (ASSÍNCRONO) ==========
+        emailService.sendWelcomeEmail(user.email, user.name)
+            .then(result => {
+                if (result.success) {
+                    console.log(`✅ Email de boas-vindas enviado para: ${user.email}`);
+                } else {
+                    console.error(`❌ Falha ao enviar email para ${user.email}:`, result.error);
+                }
+            })
+            .catch(err => {
+                console.error(`❌ Erro inesperado ao enviar email para ${user.email}:`, err.message);
+            });
 
         // Gerar token
         const token = jwt.sign(
@@ -443,7 +457,7 @@ app.post('/api/auth/register', async (req, res) => {
             success: true,
             user: userResponse,
             token,
-            message: 'Usuário criado com sucesso!'
+            message: 'Usuário criado com sucesso! Um email de boas-vindas foi enviado.'
         });
 
     } catch (error) {
