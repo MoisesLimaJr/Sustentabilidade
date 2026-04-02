@@ -5,7 +5,13 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "env:dev": "copy .env.development .env && echo ================================= && echo ✅ Ambiente DESENVOLVIMENTO configurado && echo 📊 Banco: ecoroute && echo 🌍 URL: http://localhost:3000 && echo =================================",
+    "env:prod": "copy .env.production .env && echo ================================= && echo ✅ Ambiente PRODUÇÃO configurado && echo 📊 Banco: ecoroute-prod && echo 🌍 URL: http://localhost:3000 && echo =================================",
+    "dev:setup": "npm run env:dev && npm run dev",
+    "prod:setup": "npm run env:prod && npm start",
+    "current": "echo ================================= && echo 🔍 AMBIENTE ATUAL: && echo -------------------------------- && findstr NODE_ENV .env && findstr MONGODB_URI .env && echo =================================",
+    "status": "npm run current"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
