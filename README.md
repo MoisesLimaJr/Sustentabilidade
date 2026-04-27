@@ -228,7 +228,7 @@ O sistema inclui um chat robusto com comunicação em tempo real usando Socket.I
 - ✅ Notificações de entrada/saída
 - ✅ Status de usuários em tempo real
 
-![EcoRoute Chat Interface](./screenshots/chat-interface.jpeg)
+![EcoRoute Chat Interface](./screenshots/chat-interface.png)
 
 *Para mais screenshots e detalhes visuais, consulte [SCREENSHOTS.md](./SCREENSHOTS.md)*
 
@@ -337,23 +337,13 @@ O projeto segue a **metodologia Scrum** com:
 
 ---
 
-# 👥 Contribuidores - EcoRoute
-
-<div align="center">
-
-## Time de Desenvolvimento
-
-Conheça o time que desenvolveu o EcoRoute!
-
-</div>
-
----
+## 👥 Contribuidores
 
 <table>
   <tr>
     <td align="center" width="50%">
       <a href="https://github.com/Wesleytech22">
-        <img src="https://avatars.githubusercontent.com/u/Wesleytech22?v=4" width="120px;" alt="Wesley Dias"/>
+        <img src="https://avatars.githubusercontent.com/u/209572008?v=4" width="120px;" alt="Wesley Dias"/>
       </a>
       <br />
       <h3><b>Wesley Dias</b></h3>
@@ -362,14 +352,14 @@ Conheça o time que desenvolveu o EcoRoute!
         <a href="https://github.com/Wesleytech22">
           <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
         </a>
-        <a href="https://linkedin.com/in/wesley-dias">
+        <a href="https://www.linkedin.com/in/wesley-rodrigues-a27706345/">
           <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
         </a>
       </p>
     </td>
     <td align="center" width="50%">
       <a href="https://github.com/MoisesLimaJr">
-        <img src="https://avatars.githubusercontent.com/u/MoisesLimaJr?v=4" width="120px;" alt="Moises Lima Jr"/>
+        <img src="https://avatars.githubusercontent.com/u/114486548?v=4" width="120px;" alt="Moises Lima Jr"/>
       </a>
       <br />
       <h3><b>Moises Lima Jr</b></h3>
@@ -378,54 +368,13 @@ Conheça o time que desenvolveu o EcoRoute!
         <a href="https://github.com/MoisesLimaJr">
           <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
         </a>
-        <a href="https://linkedin.com/in/moises-lima">
+        <a href="https://www.linkedin.com/in/moises-lima-jr/">
           <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
         </a>
       </p>
     </td>
   </tr>
 </table>
-
----
-
-## 🎓 Sobre o Projeto
-
-Este projeto foi desenvolvido como trabalho de faculdade na metodologia **Scrum**, integrando desenvolvimento frontend e backend para criar uma solução completa de logística reversa.
-
-### 📊 Contribuições
-
-- **Wesley Dias**: Arquitetura backend, APIs REST, Socket.IO, Autenticação
-- **Moises Lima Jr**: Interface React, Integração frontend-backend, Deploy
-
----
-
-## 🤝 Como Contribuir
-
-Se você deseja contribuir com o projeto EcoRoute:
-
-1. Faça um **Fork** do repositório
-2. Crie uma **branch** para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um **Pull Request**
-
----
-
-## 📝 Código de Conduta
-
-Este projeto adota um código de conduta para garantir um ambiente inclusivo e respeitoso. Leia mais em [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
-
----
-
-## 📞 Contato
-
-- **GitHub Issues**: [Abra uma issue](https://github.com/MoisesLimaJr/Sustentabilidade/issues)
-- **Discussões**: [Veja as discussões do projeto](https://github.com/MoisesLimaJr/Sustentabilidade/discussions)
-
----
-
-**Desenvolvido com ❤️ pelo time EcoRoute | 2026**
-
 
 ---
 
