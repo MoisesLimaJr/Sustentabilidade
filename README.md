@@ -378,12 +378,6 @@ O projeto segue a **metodologia Scrum** com:
 
 ---
 
-## 📝 Licença
-
-Este projeto é licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
----
-
 ## 🤝 Como Contribuir
 
 1. Fork o projeto
