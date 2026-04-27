@@ -339,42 +339,16 @@ O projeto segue a **metodologia Scrum** com:
 
 ## 👥 Contribuidores
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <a href="https://github.com/Wesleytech22">
-        <img src="https://avatars.githubusercontent.com/u/209572008?v=4" width="120" height="120" alt="Wesley Dias" style="border-radius: 50%; display: block;"/>
-      </a>
-      <br />
-      <h3><b>Wesley Dias</b></h3>
-      <p><strong>Backend Developer</strong></p>
-      <p>
-        <a href="https://github.com/Wesleytech22">
-          <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
-        </a>
-        <a href="https://www.linkedin.com/in/wesley-rodrigues-a27706345/">
-          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
-        </a>
-      </p>
-    </td>
-    <td align="center" width="50%">
-      <a href="https://github.com/MoisesLimaJr">
-        <img src="https://avatars.githubusercontent.com/u/114486548?v=4" width="120" height="120" alt="Moises Lima Jr" style="border-radius: 50%; display: block;"/>
-      </a>
-      <br />
-      <h3><b>Moises Lima Jr</b></h3>
-      <p><strong>Full Stack Developer</strong></p>
-      <p>
-        <a href="https://github.com/MoisesLimaJr">
-          <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
-        </a>
-        <a href="https://www.linkedin.com/in/moises-lima-jr/">
-          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
-        </a>
-      </p>
-    </td>
-  </tr>
-</table>
+<div align="center">
+
+| Wesley Dias | Moises Lima Jr |
+|:-:|:-:|
+| <a href="https://github.com/Wesleytech22"><img src="https://avatars.githubusercontent.com/u/209572008?v=4" width="100" height="100" style="border-radius: 50%;" alt="Wesley Dias"/></a> | <a href="https://github.com/MoisesLimaJr"><img src="https://avatars.githubusercontent.com/u/114486548?v=4" width="100" height="100" style="border-radius: 50%;" alt="Moises Lima Jr"/></a> |
+| **Backend Developer** | **Full Stack Developer** |
+| [![GitHub](https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github)](https://github.com/Wesleytech22) [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/wesley-rodrigues-a27706345/) | [![GitHub](https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github)](https://github.com/MoisesLimaJr) [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/moises-lima-jr/) |
+
+</div>
+
 
 ---
 
