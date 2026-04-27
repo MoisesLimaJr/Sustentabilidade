@@ -214,6 +214,26 @@ Visualize de forma intuitiva o impacto positivo das coletas realizadas.
 
 ---
 
+## 📸 Screenshots
+
+### Chat em Tempo Real
+
+O sistema inclui um chat robusto com comunicação em tempo real usando Socket.IO:
+
+**Funcionalidades:**
+- ✅ Mensagens em tempo real
+- ✅ Visualização de usuários online
+- ✅ Salas de chat organizadas por tipo de usuário
+- ✅ Histórico de mensagens persistido
+- ✅ Notificações de entrada/saída
+- ✅ Status de usuários em tempo real
+
+![EcoRoute Chat Interface](./screenshots/chat-interface.png)
+
+*Para mais screenshots e detalhes visuais, consulte [SCREENSHOTS.md](./SCREENSHOTS.md)*
+
+---
+
 ## 🏗️ Arquitetura do Projeto
 
 ```
