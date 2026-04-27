@@ -339,7 +339,7 @@ O projeto segue a **metodologia Scrum** com:
 
 ## 👥 Contribuidores
 
-<div align="center">
+<div align="left">
 
 | Wesley Dias | Moises Lima Jr |
 |:-:|:-:|
