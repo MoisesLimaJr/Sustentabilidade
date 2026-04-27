@@ -362,15 +362,9 @@ Conheça o time que desenvolveu o EcoRoute!
         <a href="https://github.com/Wesleytech22">
           <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
         </a>
-        <a href="https://linkedin.com/in/wesley-rodrigues-a27706345">
+        <a href="https://linkedin.com/in/wesley-dias">
           <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
         </a>
-      </p>
-      <p>
-        <small>
-          Node.js • MongoDB • Express.js<br/>
-          Socket.IO • JWT • API REST
-        </small>
       </p>
     </td>
     <td align="center" width="50%">
@@ -387,12 +381,6 @@ Conheça o time que desenvolveu o EcoRoute!
         <a href="https://linkedin.com/in/moises-lima">
           <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
         </a>
-      </p>
-      <p>
-        <small>
-          React • Node.js • MongoDB<br/>
-          Full Stack • UI/UX • DevOps
-        </small>
       </p>
     </td>
   </tr>
