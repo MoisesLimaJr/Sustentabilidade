@@ -22,7 +22,7 @@ A navegação lateral permite acesso rápido a todas as funcionalidades do siste
 
 ### Visualização Geral da Interface de Chat
 
-![EcoRoute Chat Interface](./screenshots/chat-interface.png)
+![EcoRoute Chat Interface](./screenshots/chat-interface.jpeg)
 
 **Funcionalidades visíveis:**
 - ✅ Barra lateral com menu de navegação
@@ -43,7 +43,7 @@ A navegação lateral permite acesso rápido a todas as funcionalidades do siste
 
 ### Detalhe: Usuários Online
 
-![Users Online Widget](./screenshots/chat-users-online.png)
+![Users Online Widget](./screenshots/chat-users-online.jpeg)
 
 **Mostra:**
 - Número de usuários conectados
