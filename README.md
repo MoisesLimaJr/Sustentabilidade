@@ -367,7 +367,7 @@ O projeto segue a **metodologia Scrum** com:
 Para dúvidas ou sugestões sobre o projeto:
 
 - **GitHub**: [MoisesLimaJr](https://github.com/MoisesLimaJr)
-- **GitHub - Wesley**: [Wesleytech22](https://github.com/Wesleytech22)
+- **GitHub**: [Wesleytech22](https://github.com/Wesleytech22)
 - **Issues**: [Abra uma issue](https://github.com/MoisesLimaJr/Sustentabilidade/issues)
 
 ---
