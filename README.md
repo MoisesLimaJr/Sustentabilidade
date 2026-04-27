@@ -228,7 +228,7 @@ O sistema inclui um chat robusto com comunicação em tempo real usando Socket.I
 - ✅ Notificações de entrada/saída
 - ✅ Status de usuários em tempo real
 
-![EcoRoute Chat Interface](./screenshots/chat-interface.png)
+![EcoRoute Chat Interface](./screenshots/chat-interface.jpeg)
 
 *Para mais screenshots e detalhes visuais, consulte [SCREENSHOTS.md](./SCREENSHOTS.md)*
 
