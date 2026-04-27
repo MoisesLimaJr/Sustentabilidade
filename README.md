@@ -343,7 +343,7 @@ O projeto segue a **metodologia Scrum** com:
   <tr>
     <td align="center" width="50%">
       <a href="https://github.com/Wesleytech22">
-        <img src="https://avatars.githubusercontent.com/u/209572008?v=4" width="120px;" alt="Wesley Dias"/>
+        <img src="https://avatars.githubusercontent.com/u/209572008?v=4" width="120px;" alt="Wesley Dias" style="border-radius: 50%;"/>
       </a>
       <br />
       <h3><b>Wesley Dias</b></h3>
@@ -359,7 +359,7 @@ O projeto segue a **metodologia Scrum** com:
     </td>
     <td align="center" width="50%">
       <a href="https://github.com/MoisesLimaJr">
-        <img src="https://avatars.githubusercontent.com/u/114486548?v=4" width="120px;" alt="Moises Lima Jr"/>
+        <img src="https://avatars.githubusercontent.com/u/114486548?v=4" width="120px;" alt="Moises Lima Jr" style="border-radius: 50%;"/>
       </a>
       <br />
       <h3><b>Moises Lima Jr</b></h3>
