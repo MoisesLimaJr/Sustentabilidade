@@ -337,26 +337,107 @@ O projeto segue a **metodologia Scrum** com:
 
 ---
 
-## 👥 Contribuidores
+# 👥 Contribuidores - EcoRoute
+
+<div align="center">
+
+## Time de Desenvolvimento
+
+Conheça o time que desenvolveu o EcoRoute!
+
+</div>
+
+---
 
 <table>
   <tr>
-    <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/seu_user_id?v=4" width="100px;" alt="Wesley Dias"/>
+    <td align="center" width="50%">
+      <a href="https://github.com/Wesleytech22">
+        <img src="https://avatars.githubusercontent.com/u/Wesleytech22?v=4" width="120px;" alt="Wesley Dias"/>
+      </a>
       <br />
-      <sub><b>Wesley Dias</b></sub>
-      <br />
-      <sub>Backend Developer</sub>
+      <h3><b>Wesley Dias</b></h3>
+      <p><strong>Backend Developer</strong></p>
+      <p>
+        <a href="https://github.com/Wesleytech22">
+          <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
+        </a>
+        <a href="https://linkedin.com/in/wesley-rodrigues-a27706345">
+          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+        </a>
+      </p>
+      <p>
+        <small>
+          Node.js • MongoDB • Express.js<br/>
+          Socket.IO • JWT • API REST
+        </small>
+      </p>
     </td>
-    <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/seu_user_id?v=4" width="100px;" alt="Moises Lima Jr"/>
+    <td align="center" width="50%">
+      <a href="https://github.com/MoisesLimaJr">
+        <img src="https://avatars.githubusercontent.com/u/MoisesLimaJr?v=4" width="120px;" alt="Moises Lima Jr"/>
+      </a>
       <br />
-      <sub><b>Moises Lima Jr</b></sub>
-      <br />
-      <sub>Full Stack Developer</sub>
+      <h3><b>Moises Lima Jr</b></h3>
+      <p><strong>Full Stack Developer</strong></p>
+      <p>
+        <a href="https://github.com/MoisesLimaJr">
+          <img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github" />
+        </a>
+        <a href="https://linkedin.com/in/moises-lima">
+          <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+        </a>
+      </p>
+      <p>
+        <small>
+          React • Node.js • MongoDB<br/>
+          Full Stack • UI/UX • DevOps
+        </small>
+      </p>
     </td>
   </tr>
 </table>
+
+---
+
+## 🎓 Sobre o Projeto
+
+Este projeto foi desenvolvido como trabalho de faculdade na metodologia **Scrum**, integrando desenvolvimento frontend e backend para criar uma solução completa de logística reversa.
+
+### 📊 Contribuições
+
+- **Wesley Dias**: Arquitetura backend, APIs REST, Socket.IO, Autenticação
+- **Moises Lima Jr**: Interface React, Integração frontend-backend, Deploy
+
+---
+
+## 🤝 Como Contribuir
+
+Se você deseja contribuir com o projeto EcoRoute:
+
+1. Faça um **Fork** do repositório
+2. Crie uma **branch** para sua feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** suas mudanças (`git commit -m 'Add AmazingFeature'`)
+4. **Push** para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um **Pull Request**
+
+---
+
+## 📝 Código de Conduta
+
+Este projeto adota um código de conduta para garantir um ambiente inclusivo e respeitoso. Leia mais em [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
+
+---
+
+## 📞 Contato
+
+- **GitHub Issues**: [Abra uma issue](https://github.com/MoisesLimaJr/Sustentabilidade/issues)
+- **Discussões**: [Veja as discussões do projeto](https://github.com/MoisesLimaJr/Sustentabilidade/discussions)
+
+---
+
+**Desenvolvido com ❤️ pelo time EcoRoute | 2026**
+
 
 ---
 
